@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>链表算法可视化</title>
+<script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>链表算法可视化 (MVP)</h1>
+    <div class="status">
+      <span id="line-label">line: —</span>
+      <span id="frame-label">frame 0 / 0</span>
+      <button id="edit-btn">✎ 编辑代码</button>
+    </div>
+  </header>
+
+  <dialog id="edit-dialog">
+    <h2>自定义算法</h2>
+    <label>代码 (要包含一个函数,入参是链表头 head):</label>
+    <textarea id="code-input" spellcheck="false"></textarea>
+
+    <div class="row">
+      <label>函数: <select id="func-select"></select></label>
+    </div>
+
+    <label>链表 (每条独立一行):</label>
+    <div id="list-rows"></div>
+    <button type="button" id="add-row">+ 添加一条链</button>
+
+    <label>额外参数 (JSON 数组,如 <code>[3]</code> 代表 x=3):</label>
+    <input id="extras-input" type="text" placeholder="[]" />
+
+    <div id="run-error" hidden></div>
+
+    <div class="dialog-actions">
+      <button id="cancel-btn" type="button">取消</button>
+      <button id="run-btn" type="button">运行</button>
+    </div>
+  </dialog>
+
+  <main>
+    <aside id="code-panel">
+      <pre id="code"></pre>
+    </aside>
+    <div id="canvas"></div>
+  </main>
+
+  <footer>
+    <div id="truncated-banner" hidden>
+      <span id="truncated-message"></span>
+      <button type="button" id="truncated-dismiss" aria-label="关闭提示">×</button>
+    </div>
+    <button id="prev-btn">← 上一步</button>
+    <input id="slider" type="range" min="0" max="0" value="0" />
+    <button id="next-btn">下一步 →</button>
+  </footer>
+
+  <script src="render.js"></script>
+  <script src="app.js"></script>
+  <script>
+    (function() {
+      var src = new EventSource("/__reload");
+      src.addEventListener("reload", function() { location.reload(); });
+    })();
+  </script>
+</body>
+</html>

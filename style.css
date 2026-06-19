@@ -1,0 +1,361 @@
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f5f6fa;
+  color: #2f3640;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  padding: 12px 20px;
+  background: #2f3640;
+  color: #f5f6fa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.status {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.status span { opacity: 0.85; }
+
+#edit-btn {
+  font-family: inherit;
+  font-size: 12px;
+  padding: 5px 12px;
+  background: #fdcb6e;
+  color: #2d3436;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#edit-btn:hover { background: #ffeaa7; }
+
+main {
+  flex: 1;
+  display: flex;
+  padding: 16px;
+  gap: 16px;
+  min-height: 0;
+  min-width: 0;
+}
+
+#code-panel {
+  width: 380px;
+  flex: 0 0 380px;
+  background: #1e272e;
+  color: #f5f6fa;
+  border-radius: 8px;
+  overflow: auto;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+#code {
+  margin: 0;
+  padding: 12px 0;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+#code .code-line {
+  display: flex;
+  padding: 0 12px;
+  white-space: pre;
+}
+#code .code-line .ln {
+  color: #57606f;
+  width: 32px;
+  flex-shrink: 0;
+  text-align: right;
+  margin-right: 12px;
+  user-select: none;
+}
+#code .code-line.active {
+  background: #fdcb6e;
+  color: #2d3436;
+}
+#code .code-line.active .ln {
+  color: #2d3436;
+  font-weight: 700;
+}
+
+#canvas {
+  flex: 1;
+  min-width: 0;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.canvas-error {
+  margin: 0;
+  padding: 20px;
+  color: #c0392b;
+  font-size: 14px;
+}
+
+#edit-dialog {
+  width: 720px;
+  max-width: 90vw;
+  padding: 20px 24px;
+  border: 1px solid #dcdde1;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+#edit-dialog::backdrop { background: rgba(0,0,0,0.4); }
+#edit-dialog h2 { margin: 0 0 12px; font-size: 16px; }
+#edit-dialog label { font-size: 13px; color: #2f3640; }
+#edit-dialog textarea {
+  width: 100%;
+  height: 320px;
+  margin-top: 6px;
+  padding: 10px;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  border: 1px solid #dcdde1;
+  border-radius: 4px;
+  resize: vertical;
+  background: #fafafa;
+  color: #2f3640;
+}
+#edit-dialog .row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+#edit-dialog .row select,
+#edit-dialog .row input {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 4px 8px;
+  border: 1px solid #dcdde1;
+  border-radius: 4px;
+  background: #fff;
+}
+
+#list-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px 0;
+}
+.list-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.list-row .vals,
+.list-row .cycle,
+.list-row .ilist,
+.list-row .iindex {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 13px;
+  padding: 5px 8px;
+  border: 1px solid #dcdde1;
+  border-radius: 4px;
+  background: #fff;
+}
+.list-row .vals { flex: 1; min-width: 120px; }
+.list-row .cycle { width: 80px; }
+.list-row .ilist,
+.list-row .iindex { width: 64px; }
+.list-row .del-row {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid #dcdde1;
+  background: #f5f6fa;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+}
+.list-row .del-row:disabled { opacity: 0.3; cursor: not-allowed; }
+.list-row .del-row:hover:not(:disabled) {
+  background: #ffe6e6;
+  border-color: #e74c3c;
+  color: #c0392b;
+}
+#add-row {
+  align-self: flex-start;
+  margin: 4px 0 8px;
+  padding: 4px 12px;
+  border: 1px dashed #b2bec3;
+  background: transparent;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #636e72;
+  cursor: pointer;
+}
+#add-row:hover { background: #f5f6fa; color: #2f3640; }
+#extras-input {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 13px;
+  padding: 5px 8px;
+  border: 1px solid #dcdde1;
+  border-radius: 4px;
+  background: #fff;
+  margin-top: 4px;
+  width: 100%;
+}
+#run-error {
+  margin-top: 12px;
+  padding: 10px;
+  background: #ffe6e6;
+  color: #c0392b;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow: auto;
+}
+.dialog-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.dialog-actions button {
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid #dcdde1;
+  background: #f5f6fa;
+}
+#run-btn { background: #74b9ff; color: #fff; border-color: #0984e3; }
+#run-btn:hover { background: #0984e3; }
+#cancel-btn:hover { background: #dcdde1; }
+
+footer {
+  padding: 12px 20px;
+  background: #ffffff;
+  border-top: 1px solid #dcdde1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+footer button {
+  padding: 6px 14px;
+  border: 1px solid #dcdde1;
+  background: #f5f6fa;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+footer button:hover { background: #dcdde1; }
+footer button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+#truncated-banner {
+  flex-basis: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #fff8d6;
+  border: 1px solid #f0c419;
+  color: #7a5d00;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+#truncated-message { flex: 1; }
+#truncated-dismiss {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: #7a5d00;
+  cursor: pointer;
+  padding: 0 4px;
+}
+#truncated-dismiss:hover { color: #2f3640; }
+
+#slider {
+  flex: 1;
+}
+
+@media (max-width: 760px) {
+  header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .status {
+    width: 100%;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  main {
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  #code-panel {
+    width: 100%;
+    flex: 0 0 220px;
+  }
+
+  #canvas {
+    min-height: 360px;
+  }
+
+  #edit-dialog {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+    padding: 16px;
+  }
+
+  #edit-dialog textarea {
+    height: 220px;
+  }
+
+  .list-row {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .list-row .vals {
+    flex-basis: 100%;
+  }
+
+  footer {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  footer button {
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+}
