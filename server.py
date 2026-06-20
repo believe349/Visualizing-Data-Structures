@@ -12,6 +12,7 @@ import subprocess
 import sys
 import threading
 import traceback
+import webbrowser
 from contextlib import redirect_stdout
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from queue import Empty, Queue
@@ -343,4 +344,5 @@ if __name__ == "__main__":
     addr = ("127.0.0.1", port)
     _start_watcher()
     print(f"serving http://{addr[0]}:{addr[1]}  (live-reload on, Ctrl+C to stop)")
+    webbrowser.open(f"http://{addr[0]}:{addr[1]}")
     ThreadingHTTPServer(addr, Handler).serve_forever()
