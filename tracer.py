@@ -16,6 +16,7 @@ Output schema (frames.json):
 ]
 """
 
+import os
 import sys
 import json
 import inspect
@@ -154,6 +155,7 @@ if __name__ == "__main__":
     head = build_list([1, 2, 3, 4, 5])
     _, frames, source, truncated = trace(reverseList, head)
     payload = {"source": source, "frames": frames, "truncated": truncated}
-    with open("frames.json", "w", encoding="utf-8") as f:
+    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", "public", "frames.json")
+    with open(out, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
-    print(f"wrote {len(frames)} frames to frames.json")
+    print(f"wrote {len(frames)} frames to {out}")

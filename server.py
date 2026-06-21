@@ -1,21 +1,25 @@
 """
-Dev server: serves static files + POST /run that traces user-supplied code.
+API + static server for the React/Vite frontend.
 
-Run:  py server.py
-Open: http://localhost:8000
+Serves the built frontend from frontend/dist and exposes POST /run, which traces
+user-supplied code. During development run the Vite dev server (npm run dev) for
+hot-reload; it proxies /run here.
+
+Build the frontend first:  cd frontend && npm run build
+Run:   py server.py
+Open:  http://localhost:8000
 """
 
+import functools
 import json
 import io
 import os
 import subprocess
 import sys
-import threading
 import traceback
 import webbrowser
 from contextlib import redirect_stdout
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from queue import Empty, Queue
 from socketserver import ThreadingMixIn
 
 from tracer import trace, build_list, ListNode
@@ -30,31 +34,8 @@ MAX_LIST_LEN = 200
 MAX_EXTRAS = 8
 RUN_TIMEOUT_SECONDS = 3
 
-# ---- live-reload (SSE) ----
-_WATCH_EXTS = {".html", ".js", ".css"}
-_WATCH_DIR = os.path.dirname(os.path.abspath(__file__))
-_sse_queues = []
-_sse_lock = threading.Lock()
-
-
-def _broadcast_reload():
-    with _sse_lock:
-        for q in _sse_queues:
-            q.put("reload")
-
-
-def _start_watcher():
-    import watchfiles
-
-    def watch_loop():
-        for changes in watchfiles.watch(_WATCH_DIR):
-            for _change, path in changes:
-                if os.path.splitext(path)[1].lower() in _WATCH_EXTS:
-                    _broadcast_reload()
-                    break
-
-    t = threading.Thread(target=watch_loop, daemon=True)
-    t.start()
+# Built frontend (vite build output) served as static files.
+DIST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", "dist")
 
 
 class UserCodeError(Exception):
@@ -268,39 +249,6 @@ def _prepare_inputs(inputs):
 
 
 class Handler(SimpleHTTPRequestHandler):
-    def do_GET(self):
-        if self.path == "/__reload":
-            self._handle_sse()
-            return
-        super().do_GET()
-
-    def _handle_sse(self):
-        self.send_response(200)
-        self.send_header("Content-Type", "text/event-stream")
-        self.send_header("Cache-Control", "no-cache")
-        self.send_header("Connection", "keep-alive")
-        self.end_headers()
-
-        q = Queue()
-        with _sse_lock:
-            _sse_queues.append(q)
-        try:
-            self.wfile.write(b":ok\n\n")
-            self.wfile.flush()
-            while True:
-                try:
-                    q.get(timeout=25)
-                    self.wfile.write(b"event: reload\ndata: changed\n\n")
-                    self.wfile.flush()
-                except Empty:
-                    self.wfile.write(b":\n\n")
-                    self.wfile.flush()
-        except (BrokenPipeError, ConnectionResetError, OSError):
-            pass
-        finally:
-            with _sse_lock:
-                _sse_queues.remove(q)
-
     def do_POST(self):
         if self.path != "/run":
             self.send_error(404)
@@ -342,7 +290,10 @@ if __name__ == "__main__":
 
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
     addr = ("127.0.0.1", port)
-    _start_watcher()
-    print(f"serving http://{addr[0]}:{addr[1]}  (live-reload on, Ctrl+C to stop)")
+    if not os.path.isdir(DIST_DIR):
+        print(f"warning: {DIST_DIR} not found — run 'cd frontend && npm run build' first.")
+        print("         /run still works; for dev use 'npm run dev' (proxies /run here).")
+    handler = functools.partial(Handler, directory=DIST_DIR)
+    print(f"serving http://{addr[0]}:{addr[1]}  (Ctrl+C to stop)")
     webbrowser.open(f"http://{addr[0]}:{addr[1]}")
-    ThreadingHTTPServer(addr, Handler).serve_forever()
+    ThreadingHTTPServer(addr, handler).serve_forever()
